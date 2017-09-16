@@ -24,15 +24,19 @@ io.on('connection', (socket) => {
   // messages until a name is accepted. When a name is finally accepted, send a `welcome`
   // message and a the current game state, "turn off" the `name` message listener, then
   // start accepting `move` messages.
-  const nameListener = (name) => {
+  const nameListener = async (name) => {
     const trimmedName = name.trim();
-    if (game.addPlayer(trimmedName)) {
+    const isPlayerAdded = await game.addPlayer(trimmedName);
+    if (isPlayerAdded) {
       io.to(socket.id).emit('welcome');
-      io.emit('state', game.state());
+      let state = await game.state();
+      console.log(state);
+      io.emit('state', state);
       socket.removeListener('name', nameListener);
-      socket.on('move', (direction) => {
-        game.move(direction, trimmedName);
-        io.emit('state', game.state());
+      socket.on('move', async (direction) => {
+        await game.move(direction, trimmedName);
+        state = await game.state();
+        io.emit('state', state);
       });
     } else {
       io.to(socket.id).emit('badname', trimmedName);
