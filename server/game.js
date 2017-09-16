@@ -63,7 +63,7 @@ function placeCoins() {
     const coinValue = (i < 50) ? 1 : (i < 75) ? 2 : (i < 95) ? 5 : 10;
     const index = `${Math.floor(position / WIDTH)},${Math.floor(position % WIDTH)}`;
     console.log(`Placed coin of value ${coinValue} at ${index}`);
-    client.hmset('coins', index, coinValue);
+    client.hset('coins', index, coinValue);
   });
   console.log('placed coins.');
 }
@@ -103,16 +103,12 @@ exports.state = () => new Promise((resolve, reject) => {
       });
     },
     coins: (done) => {
-      const coinsObject = {};
       client.hgetall('coins', (err, coinPositions) => {
         if (err) {
           done(err);
         }
-        for (let i = 0; i < coinPositions.length - 1; i += 2) {
-          coinsObject[coinPositions[i]] = coinPositions[i + 1];
-        }
+        done(null, coinPositions);
       });
-      done(null, coinsObject);
     },
   },
   (err, results) => {
@@ -120,30 +116,19 @@ exports.state = () => new Promise((resolve, reject) => {
       console.error(err);
       reject(err);
     }
-    console.log(results);
     resolve(results);
   });
 });
 
+/**
+ * A function that takes a direction and the player name as input and moves
+ * the token that corresponds to that player (if necessary).
+ * @param {String} direction : the direction in which the player will move
+ * @param {String} name : the name of the player that should be moved
+ */
 exports.move = (direction, name) => {
   return new Promise((resolve, reject) => {
     const delta = { U: [0, -1], R: [1, 0], D: [0, 1], L: [-1, 0] }[direction];
-    // if (delta) {
-    //   const playerKey = `player:${name}`;
-    //   const [x, y] = database[playerKey].split(',');
-    //   const [newX, newY] = [clamp(+x + delta[0], 0, WIDTH - 1), clamp(+y + delta[1], 0, HEIGHT - 1)];
-    //   const value = database.coins[`${newX},${newY}`];
-    //   if (value) {
-    //     database.scores[name] += value;
-    //     delete database.coins[`${newX},${newY}`];
-    //   }
-    //   database[playerKey] = `${newX},${newY}`;
-
-    //   // When all coins collected, generate a new batch.
-    //   if (Object.keys(database.coins).length === 0) {
-    //     placeCoins();
-    //   }
-    // }
 
     if (delta) {
       const playerKey = `player:${name}`;
