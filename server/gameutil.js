@@ -29,6 +29,9 @@ exports.scanValues = pattern => new Promise((resolve, reject) => {
   let keys = [];
   let values = [];
 
+  /**
+   * A helper function to continue scanning if a non-zero cursor is returned
+   */
   const scanHelper = () => client.scan('0', 'MATCH', pattern, (err, res) => {
     if (err) {
       reject(err);
@@ -47,7 +50,6 @@ exports.scanValues = pattern => new Promise((resolve, reject) => {
       }
       values = values.concat(newValues);
       if (cursor === '0') {
-        console.log('Scan Complete');
         resolve([keys, values]);
       } else {
         return scanHelper();

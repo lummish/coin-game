@@ -37,8 +37,6 @@ const NUM_COINS = 100;
 // scores           sorted set   playername with score
 // coins            hash         { "<row>,<col>": coinvalue }
 // usednames        set          all used names, to check quickly if a name has been used
-//
-
 exports.addPlayer = async name => new Promise((resolve, reject) => {
   client.sismember('usednames', name, (err, isMember) => {
     if (err) {
@@ -58,14 +56,11 @@ exports.addPlayer = async name => new Promise((resolve, reject) => {
 });
 
 function placeCoins() {
-  console.log('placing coins...');
   permutation(WIDTH * HEIGHT).slice(0, NUM_COINS).forEach((position, i) => {
     const coinValue = (i < 50) ? 1 : (i < 75) ? 2 : (i < 95) ? 5 : 10;
     const index = `${Math.floor(position / WIDTH)},${Math.floor(position % WIDTH)}`;
-    console.log(`Placed coin of value ${coinValue} at ${index}`);
     client.hset('coins', index, coinValue);
   });
-  console.log('placed coins.');
 }
 
 // Return only the parts of the database relevant to the client. The client only cares about
@@ -92,7 +87,7 @@ exports.state = () => new Promise((resolve, reject) => {
     },
     scores: (done) => {
       const scoresArray = [];
-      client.zrevrange('score', 0, -1, 'WITHSCORES', (err, playerScores) => {
+      client.zrevrange('scores', 0, -1, 'WITHSCORES', (err, playerScores) => {
         if (err) {
           done(err);
         }

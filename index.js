@@ -30,7 +30,6 @@ io.on('connection', (socket) => {
     if (isPlayerAdded) {
       io.to(socket.id).emit('welcome');
       let state = await game.state();
-      console.log(state);
       io.emit('state', state);
       socket.removeListener('name', nameListener);
       socket.on('move', async (direction) => {
